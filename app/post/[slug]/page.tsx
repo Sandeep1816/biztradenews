@@ -1,4 +1,4 @@
-// ✅ Server Component (no "use client")
+// ✅ Server Component (Next.js 16 compatible, no "use client")
 
 type Author = {
   id: number;
@@ -19,7 +19,7 @@ type Post = {
   slug: string;
   excerpt?: string | null;
   content: string;
-  imageUrl?: string;
+  imageUrl?: string | null;
   author: Author;
   category: Category;
   publishedAt: string;
@@ -31,26 +31,29 @@ export default async function PostDetails({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  // ✅ unwrap params (required in Next.js 16)
   const { slug } = await params;
 
-  // ✅ fetch from your backend using the slug
+  // ✅ Fetch post from backend
   const res = await fetch(
     `https://newsprk-backend.onrender.com/api/posts?slug=${slug}`,
     { cache: "no-store" }
   );
 
+  if (!res.ok) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Error fetching post.
+      </div>
+    );
+  }
+
   const data = await res.json();
 
-  // ✅ get the specific post (some APIs return an array)
-  const post: Post =
-    data.data?.find((p: Post) => p.slug === slug) ||
-    data?.find((p: Post) => p.slug === slug) ||
-    data.data ||
-    data;
+  // ✅ Pick correct post from API data
+  const post: Post | undefined =
+    data.data?.find((p: Post) => p.slug === slug) || data.data?.[0];
 
-  // 🧠 If backend returns one object directly, no problem — it’ll still work
-  if (!post || !post.title) {
+  if (!post) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-500">
         Post not found.
@@ -58,13 +61,11 @@ export default async function PostDetails({
     );
   }
 
-  // ✅ Image handling
+  // ✅ Use DB image or fallback local image
   const image =
-    post.imageUrl && post.imageUrl.startsWith("http")
+    post.imageUrl && post.imageUrl.trim() !== ""
       ? post.imageUrl
-      : post.imageUrl
-      ? `https://newsprk-backend.onrender.com${post.imageUrl}`
-      : "/images/placeholder.jpg";
+      : "/images/blog1.jpg"; // ← local image in public/images/blog1.jpg
 
   return (
     <article className="max-w-4xl mx-auto px-6 py-12">
@@ -107,7 +108,7 @@ export default async function PostDetails({
         }}
       />
 
-      {/* 👤 Author Info */}
+      {/* 👤 Author Section */}
       <div className="bg-gray-50 border border-gray-200 p-6 rounded-xl shadow-sm flex items-start gap-5">
         <img
           src={

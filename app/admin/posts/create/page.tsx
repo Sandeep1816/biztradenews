@@ -16,7 +16,7 @@ export default function CreatePost() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🧩 Fetch authors and categories from backend
+  // 🧩 Fetch authors & categories
   useEffect(() => {
     Promise.all([
       fetch("https://newsprk-backend.onrender.com/api/authors").then((r) => r.json()),
@@ -71,7 +71,7 @@ export default function CreatePost() {
     }
   }
 
-  // 🧩 Handle title change and slug generation
+  // 🧩 Title → Slug Generator
   function handleTitleChange(e: ChangeEvent<HTMLInputElement>) {
     const title = e.target.value;
     const slug = title
@@ -81,7 +81,7 @@ export default function CreatePost() {
     setForm((prev) => ({ ...prev, title, slug }));
   }
 
-  // 🧩 Input change handler helper
+  // 🧩 Input Change Handler
   function handleChange(
     e:
       | ChangeEvent<HTMLInputElement>
@@ -92,7 +92,7 @@ export default function CreatePost() {
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
-  // 🧩 UI
+  // ✅ UI
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-6 flex justify-center">
       <div className="max-w-3xl w-full bg-white shadow-lg rounded-2xl p-8">
@@ -136,6 +136,7 @@ export default function CreatePost() {
               value={form.imageUrl}
               onChange={handleChange}
               className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+              placeholder="https://example.com/image.jpg"
             />
           </div>
 
@@ -188,23 +189,27 @@ export default function CreatePost() {
             </select>
           </div>
 
-          {/* Content */}
+          {/* Content (Improved) */}
           <div>
             <label className="block text-sm font-semibold mb-2">Content</label>
             <textarea
               name="content"
               value={form.content}
               onChange={handleChange}
-              rows={6}
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+              rows={12} // ✅ more space for longer posts
+              placeholder="Write your full article here..."
+              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 resize-y"
             />
+            <p className="text-xs text-gray-400 mt-1">
+              ✍️ You can write multiple paragraphs — no limits.
+            </p>
           </div>
 
           {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-lg font-semibold text-white ${
+            className={`w-full py-3 rounded-lg font-semibold text-white transition ${
               loading
                 ? "bg-indigo-300 cursor-not-allowed"
                 : "bg-indigo-600 hover:bg-indigo-700"
@@ -213,9 +218,14 @@ export default function CreatePost() {
             {loading ? "Creating..." : "🚀 Create Post"}
           </button>
 
-          {/* Message */}
           {message && (
-            <p className="text-center mt-3 text-sm">{message}</p>
+            <p
+              className={`text-center mt-3 text-sm font-medium ${
+                message.startsWith("✅") ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {message}
+            </p>
           )}
         </form>
       </div>

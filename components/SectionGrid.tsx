@@ -1,5 +1,6 @@
 "use client";
 import ArticleCard from "./ArticleCard";
+import { getSafeImageUrl } from "@/lib/getSafeImageUrl"; // ✅ We'll create this helper next
 
 type SectionGridProps = {
   title: string;
@@ -15,17 +16,22 @@ export default function SectionGrid({ title, posts }: SectionGridProps) {
         <p className="text-gray-500 text-center">No articles found.</p>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {posts.map((post) => (
-            <ArticleCard
-              key={post.id}
-              title={post.title}
-              excerpt={post.excerpt || post.content?.substring(0, 120) || ""}
-              imageUrl={post.imageUrl}
-              category={post.category?.name}
-              date={post.publishedAt}
-              slug={post.slug}
-            />
-          ))}
+          {posts.map((post) => {
+            // ✅ Cleanly get a safe image URL (backend or fallback)
+            const imageUrl = getSafeImageUrl(post.imageUrl);
+
+            return (
+              <ArticleCard
+                key={post.id}
+                title={post.title}
+                excerpt={post.excerpt || post.content?.substring(0, 120) || ""}
+                imageUrl={imageUrl}
+                category={post.category?.name}
+                date={post.publishedAt}
+                slug={post.slug}
+              />
+            );
+          })}
         </div>
       )}
     </section>
